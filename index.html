@@ -723,6 +723,7 @@ function countryName(cc) {
 
   /* 5. リアルタイム集計 → ランキング描画 */
   viewersRef.on('value', snap => {
+    console.log('DB snapshot:', JSON.stringify(snap.val()));
     const raw = snap.val() || {};
 
     // 各国のカウントを集計
@@ -779,6 +780,8 @@ function countryName(cc) {
 
     rankingList.innerHTML = html;
     overlay.classList.add('hidden');
+  }, err => {
+    console.error('DB read error:', err.code, err.message);
   });
 
   /* 6. ローディング解除 */
@@ -791,4 +794,5 @@ function countryName(cc) {
 })();
 </script>
 </body>
+</html>
 </html>
