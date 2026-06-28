@@ -5,255 +5,259 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Are you watching World Cup?</title>
 
-<!-- ===== Google Fonts ===== -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@800;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
 
-<!-- ===== Firebase SDK (CDN) ===== -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <style>
-/* ─── Reset ─── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* ─── Design tokens ─── */
 :root {
-  --bg:         #060f08;
-  --surface:    #0d1f10;
-  --surface2:   #122016;
-  --border:     #1e4024;
-  --green:      #4ade80;
-  --green-dim:  #22543d;
-  --green-glow: rgba(74, 222, 128, 0.25);
-  --text:       #e8f5ea;
-  --muted:      #5a7d5f;
-  --score-font: 'Orbitron', monospace;
-  --body-font:  'Inter', sans-serif;
+  --c1: #e63946; /* 赤 */
+  --c2: #f4a261; /* オレンジ */
+  --c3: #f9c74f; /* 黄 */
+  --c4: #43aa8b; /* 緑 */
+  --c5: #4361ee; /* 青 */
+  --c6: #7209b7; /* 紫 */
+  --bg: #0a0a0a;
+  --surface: rgba(255,255,255,0.05);
+  --border: rgba(255,255,255,0.1);
+  --text: #ffffff;
+  --muted: rgba(255,255,255,0.45);
+  --display: 'Figtree', sans-serif;
+  --body: 'Inter', sans-serif;
 }
 
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: var(--body-font);
+  font-family: var(--body);
   min-height: 100vh;
   overflow-x: hidden;
-  position: relative;
 }
 
-/* ─── Pitch-line background ─── */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background:
-    repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 60px,
-      rgba(30,64,36,0.15) 60px,
-      rgba(30,64,36,0.15) 61px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      transparent,
-      transparent 60px,
-      rgba(30,64,36,0.08) 60px,
-      rgba(30,64,36,0.08) 61px
-    );
-  pointer-events: none;
-  z-index: 0;
+/* ─── Loading overlay ─── */
+#overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 20px;
+  transition: opacity 0.6s;
 }
+#overlay.hidden { opacity: 0; pointer-events: none; }
 
-/* ─── Vignette ─── */
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: radial-gradient(ellipse at 50% 30%, transparent 30%, rgba(0,0,0,0.7) 100%);
-  pointer-events: none;
-  z-index: 0;
+.spinner {
+  width: 48px; height: 48px;
+  border: 3px solid rgba(255,255,255,0.1);
+  border-top-color: var(--c1);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
 }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-/* ─── Layout ─── */
-#app {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 40px 20px 60px;
-  gap: 0;
+.overlay-text {
+  font-family: var(--display);
+  font-size: 13px; letter-spacing: 3px;
+  color: var(--muted);
 }
+#overlay.error .spinner { display: none; }
+#overlay.error .overlay-text { color: var(--c1); max-width: 300px; text-align: center; line-height: 1.6; }
 
-/* ─── Hero ─── */
+/* ─── Hero section ─── */
 .hero {
-  text-align: center;
-  margin-bottom: 48px;
-  padding-top: 20px;
-}
-
-.eyebrow {
-  font-family: var(--score-font);
-  font-size: 11px;
-  letter-spacing: 4px;
-  color: var(--green);
-  opacity: 0.7;
-  margin-bottom: 16px;
-  text-transform: uppercase;
-}
-
-.hero h1 {
-  font-family: var(--score-font);
-  font-size: clamp(28px, 6vw, 68px);
-  font-weight: 900;
-  line-height: 1.1;
-  letter-spacing: -1px;
-  color: var(--text);
-  text-shadow:
-    0 0 40px var(--green-glow),
-    0 0 80px rgba(74, 222, 128, 0.1);
-  margin-bottom: 8px;
-}
-
-.hero h1 span {
-  color: var(--green);
-  display: inline-block;
   position: relative;
-}
-
-.hero h1 span::after {
-  content: '';
-  position: absolute;
-  bottom: -4px;
-  left: 0; right: 0;
-  height: 3px;
-  background: var(--green);
-  box-shadow: 0 0 12px var(--green);
-  border-radius: 2px;
-}
-
-.subtitle {
-  font-size: 14px;
-  color: var(--muted);
-  letter-spacing: 1px;
-  margin-top: 12px;
-}
-
-.hero-count {
-  margin-top: 32px;
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 20px 48px;
-  position: relative;
-}
-
-.hero-count::before {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, var(--green-dim), transparent);
-  opacity: 0.4;
-  pointer-events: none;
-}
-
-.hero-count-num {
-  font-family: var(--score-font);
-  font-size: clamp(48px, 10vw, 96px);
-  font-weight: 900;
-  color: var(--green);
-  line-height: 1;
-  text-shadow: 0 0 40px var(--green-glow), 0 0 80px rgba(74,222,128,0.15);
-  transition: all 0.4s ease;
-}
-
-.hero-count-label {
-  font-family: var(--score-font);
-  font-size: 10px;
-  letter-spacing: 3px;
-  color: var(--muted);
-}
-
-/* ─── YES Button ─── */
-.cta-wrap {
-  margin: 8px 0 52px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-}
-
-#yesBtn {
-  position: relative;
-  font-family: var(--score-font);
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: 6px;
-  color: var(--bg);
-  background: var(--green);
-  border: none;
-  padding: 18px 64px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s;
-  box-shadow: 0 0 24px var(--green-glow), 0 4px 20px rgba(0,0,0,0.5);
+  justify-content: center;
+  min-height: 100vh;
+  padding: 60px 24px 40px;
+  text-align: center;
   overflow: hidden;
 }
 
-#yesBtn::before {
-  content: '';
+/* 虹の同心円 */
+.rings {
   position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -56%);
+  width: 900px; height: 900px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ring {
+  position: absolute;
+  border-radius: 50%;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+}
+.ring-1 { width: 900px; height: 900px; background: var(--c6); }
+.ring-2 { width: 760px; height: 760px; background: var(--c5); }
+.ring-3 { width: 620px; height: 620px; background: var(--c4); }
+.ring-4 { width: 490px; height: 490px; background: var(--c3); }
+.ring-5 { width: 370px; height: 370px; background: var(--c2); }
+.ring-6 { width: 260px; height: 260px; background: var(--c1); }
+.ring-center { width: 160px; height: 160px; background: var(--bg); }
+
+/* 下半分を黒でマスク */
+.rings-mask {
+  position: absolute;
+  bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  height: 52%;
+  background: var(--bg);
+  z-index: 1;
+}
+
+/* トロフィー */
+.trophy-wrap {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.trophy {
+  font-size: clamp(72px, 14vw, 140px);
+  line-height: 1;
+  filter: drop-shadow(0 0 40px rgba(249,199,79,0.6)) drop-shadow(0 0 80px rgba(249,199,79,0.3));
+  animation: trophy-float 3s ease-in-out infinite;
+}
+@keyframes trophy-float {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50%       { transform: translateY(-12px) rotate(2deg); }
+}
+
+/* テキスト */
+.hero-content {
+  position: relative;
+  z-index: 3;
+  margin-top: 320px;
+}
+
+.hero h1 {
+  font-family: var(--display);
+  font-size: clamp(36px, 8vw, 100px);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -2px;
+  text-transform: uppercase;
+  color: #fff;
+  margin-bottom: 16px;
+}
+
+.hero h1 em {
+  font-style: normal;
+  background: linear-gradient(90deg, var(--c1), var(--c2), var(--c3));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-sub {
+  font-size: 15px;
+  color: var(--muted);
+  letter-spacing: 1px;
+  margin-bottom: 32px;
+}
+
+/* 人数 */
+.live-count {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 36px;
+}
+
+.live-count-num {
+  font-family: var(--display);
+  font-size: clamp(64px, 14vw, 120px);
+  font-weight: 900;
+  line-height: 1;
+  background: linear-gradient(135deg, #fff 40%, var(--c3));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.live-count-label {
+  font-family: var(--display);
+  font-size: 11px;
+  letter-spacing: 4px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+/* ─── YES Button ─── */
+#yesBtn {
+  position: relative;
+  font-family: var(--display);
+  font-size: clamp(20px, 4vw, 28px);
+  font-weight: 900;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: #000;
+  background: #fff;
+  border: none;
+  padding: 20px 72px;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 0 40px rgba(255,255,255,0.2), 0 8px 32px rgba(0,0,0,0.4);
+  margin-bottom: 12px;
 }
 
 #yesBtn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 0 40px rgba(74, 222, 128, 0.5), 0 8px 30px rgba(0,0,0,0.6);
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 0 60px rgba(255,255,255,0.35), 0 12px 40px rgba(0,0,0,0.5);
 }
-
-#yesBtn:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-#yesBtn:disabled {
-  cursor: default;
-  opacity: 0.9;
-}
+#yesBtn:active:not(:disabled) { transform: scale(0.98); }
+#yesBtn:disabled { cursor: default; }
 
 #yesBtn.watching {
   background: transparent;
-  color: var(--green);
-  border: 2px solid var(--green);
-  box-shadow: 0 0 16px var(--green-glow);
-  letter-spacing: 4px;
-  font-size: 14px;
+  color: #fff;
+  border: 2px solid rgba(255,255,255,0.3);
+  box-shadow: none;
+  font-size: 16px;
+  padding: 16px 48px;
 }
 
 .btn-hint {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
 }
 
-/* ─── Status bar ─── */
+/* ─── Stats section ─── */
+.stats-section {
+  background: var(--bg);
+  padding: 0 24px 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Status bar */
 .status-bar {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 12px 24px;
+  border-radius: 12px;
+  padding: 14px 24px;
   margin-bottom: 40px;
   width: 100%;
-  max-width: 640px;
+  max-width: 600px;
 }
 
 .status-dot {
@@ -264,14 +268,11 @@ body::after {
   transition: background 0.3s, box-shadow 0.3s;
 }
 .status-dot.live {
-  background: var(--green);
-  box-shadow: 0 0 8px var(--green);
+  background: var(--c4);
+  box-shadow: 0 0 8px var(--c4);
   animation: pulse-dot 2s infinite;
 }
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
+@keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
 .status-label {
   font-size: 11px;
@@ -282,13 +283,12 @@ body::after {
 }
 
 .total-count {
-  font-family: var(--score-font);
+  font-family: var(--display);
   font-size: 28px;
-  color: var(--green);
-  text-shadow: 0 0 16px var(--green-glow);
+  font-weight: 900;
+  color: #fff;
   line-height: 1;
 }
-
 .total-label {
   font-size: 10px;
   color: var(--muted);
@@ -296,279 +296,161 @@ body::after {
   text-align: right;
 }
 
-/* ─── Ranking ─── */
+/* Ranking */
 .ranking-header {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  width: 100%;
-  max-width: 640px;
+  width: 100%; max-width: 600px;
   margin-bottom: 16px;
 }
-
 .ranking-title {
-  font-family: var(--score-font);
-  font-size: 11px;
+  font-family: var(--display);
+  font-size: 12px;
+  font-weight: 800;
   letter-spacing: 3px;
   color: var(--muted);
+  text-transform: uppercase;
 }
-
 .ranking-sub {
-  font-size: 10px;
-  color: var(--muted);
-  opacity: 0.6;
+  font-size: 10px; color: var(--muted); opacity: 0.5;
 }
 
 #rankingList {
-  width: 100%;
-  max-width: 640px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  width: 100%; max-width: 600px;
+  display: flex; flex-direction: column; gap: 8px;
 }
 
-/* ─── Ranking row ─── */
 .rank-row {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 12px 16px;
+  border-radius: 12px;
+  padding: 14px 16px;
   display: grid;
   grid-template-columns: 32px 1fr auto;
   align-items: center;
   gap: 12px;
-  transition: border-color 0.3s, background 0.3s;
-  position: relative;
-  overflow: hidden;
+  transition: border-color 0.3s;
+  position: relative; overflow: hidden;
 }
-
-.rank-row.my-country {
-  border-color: var(--green);
-  background: rgba(74, 222, 128, 0.04);
-}
-
-/* Scan line on update */
-.rank-row.flash::after {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(74,222,128,0.15), transparent);
-  animation: scan 0.5s linear forwards;
-}
-@keyframes scan {
-  from { transform: translateX(-100%); }
-  to   { transform: translateX(100%); }
-}
+.rank-row.my-country { border-color: var(--c3); background: rgba(249,199,79,0.05); }
 
 .rank-num {
-  font-family: var(--score-font);
-  font-size: 13px;
-  color: var(--muted);
-  text-align: center;
+  font-family: var(--display);
+  font-size: 14px; font-weight: 900;
+  color: var(--muted); text-align: center;
 }
-
-.rank-num.top1 { color: #fbbf24; }
+.rank-num.top1 { color: #f9c74f; }
 .rank-num.top2 { color: #94a3b8; }
 .rank-num.top3 { color: #c97c3a; }
 
-.rank-info {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  overflow: hidden;
-}
-
+.rank-info { display: flex; flex-direction: column; gap: 5px; overflow: hidden; }
 .rank-name {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  display: flex; align-items: center; gap: 8px;
+  font-size: 14px; font-weight: 600; color: #fff;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+.rank-flag { font-size: 20px; flex-shrink: 0; }
 
-.rank-flag {
-  font-size: 18px;
-  line-height: 1;
-  flex-shrink: 0;
-}
-
-.rank-bar-wrap {
-  height: 3px;
-  background: var(--surface2);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
+.rank-bar-wrap { height: 3px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; }
 .rank-bar {
-  height: 100%;
-  border-radius: 2px;
-  background: linear-gradient(90deg, var(--green-dim), var(--green));
-  box-shadow: 0 0 6px var(--green-glow);
-  transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 100%; border-radius: 2px;
+  background: linear-gradient(90deg, var(--c5), var(--c1));
+  transition: width 0.7s cubic-bezier(0.4,0,0.2,1);
 }
 
-.rank-right {
-  text-align: right;
-  flex-shrink: 0;
-}
+.rank-right { text-align: right; flex-shrink: 0; }
+.rank-pct { font-family: var(--display); font-size: 18px; font-weight: 900; color: #fff; display: block; line-height: 1; }
+.rank-cnt { font-size: 10px; color: var(--muted); letter-spacing: 1px; display: block; margin-top: 3px; }
 
-.rank-pct {
-  font-family: var(--score-font);
-  font-size: 16px;
-  color: var(--green);
-  display: block;
-  line-height: 1;
-}
+.empty-state { text-align: center; padding: 48px 0; color: var(--muted); font-size: 13px; }
 
-.rank-cnt {
-  font-size: 10px;
-  color: var(--muted);
-  letter-spacing: 1px;
-  display: block;
-  margin-top: 3px;
-}
-
-/* ─── Empty state ─── */
-.empty-state {
-  text-align: center;
-  padding: 48px 0;
-  color: var(--muted);
-  font-size: 13px;
-  letter-spacing: 1px;
-}
-
-/* ─── Loading / Error overlay ─── */
-#overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  background: var(--bg);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  transition: opacity 0.6s;
-}
-
-#overlay.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.spinner {
-  width: 48px; height: 48px;
-  border: 3px solid var(--border);
-  border-top-color: var(--green);
-  border-radius: 50%;
-  animation: spin 0.9s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.overlay-text {
-  font-family: var(--score-font);
-  font-size: 12px;
-  letter-spacing: 3px;
-  color: var(--muted);
-}
-
-#overlay.error .spinner { display: none; }
-#overlay.error .overlay-text {
-  color: #f87171;
-  font-size: 13px;
-  max-width: 300px;
-  text-align: center;
-  line-height: 1.6;
-}
-
-/* ─── Football deco ─── */
-.soccer-ball {
-  font-size: 64px;
-  line-height: 1;
-  filter: drop-shadow(0 0 16px rgba(74,222,128,0.3));
-  animation: float 4s ease-in-out infinite;
-}
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-10px); }
-}
-
-/* ─── Footer ─── */
 footer {
-  position: relative;
-  z-index: 1;
   text-align: center;
-  padding: 32px 20px 20px;
+  padding: 20px;
   font-size: 10px;
   color: var(--muted);
+  opacity: 0.4;
   letter-spacing: 1px;
-  opacity: 0.5;
 }
 
-/* ─── Responsive ─── */
 @media (max-width: 480px) {
-  .rank-name { font-size: 12px; }
-  .rank-pct  { font-size: 14px; }
-  #yesBtn    { padding: 16px 48px; font-size: 18px; }
+  .rings { width: 600px; height: 600px; }
+  .ring-1 { width: 600px; height: 600px; }
+  .ring-2 { width: 510px; height: 510px; }
+  .ring-3 { width: 420px; height: 420px; }
+  .ring-4 { width: 335px; height: 335px; }
+  .ring-5 { width: 255px; height: 255px; }
+  .ring-6 { width: 180px; height: 180px; }
+  .ring-center { width: 110px; height: 110px; }
+  .hero-content { margin-top: 220px; }
+  .trophy { font-size: 72px; }
 }
 </style>
 </head>
 <body>
 
-<!-- ===== Loading overlay ===== -->
+<!-- Loading overlay -->
 <div id="overlay">
-  <div class="soccer-ball">⚽</div>
   <div class="spinner"></div>
   <div class="overlay-text" id="overlayMsg">CONNECTING...</div>
 </div>
 
-<!-- ===== Main app ===== -->
-<div id="app">
+<!-- Hero -->
+<section class="hero">
+  <!-- 虹の同心円 -->
+  <div class="rings">
+    <div class="ring ring-1"></div>
+    <div class="ring ring-2"></div>
+    <div class="ring ring-3"></div>
+    <div class="ring ring-4"></div>
+    <div class="ring ring-5"></div>
+    <div class="ring ring-6"></div>
+    <div class="ring ring-center"></div>
+  </div>
+  <div class="rings-mask"></div>
 
-  <!-- Hero -->
-  <section class="hero">
-    <p class="eyebrow">⚽ FIFA WORLD CUP — LIVE TRACKER</p>
-    <h1>Are you watching<br><span>World Cup?</span></h1>
-    <p class="subtitle">Tap YES to join the global count — tracked live by country</p>
-    <div class="hero-count">
-      <div class="hero-count-num" id="heroCount">—</div>
-      <div class="hero-count-label">PEOPLE WATCHING RIGHT NOW</div>
-    </div>
-  </section>
-
-  <!-- CTA -->
-  <div class="cta-wrap">
-    <button id="yesBtn">YES</button>
-    <span class="btn-hint" id="btnHint">Your presence will be counted while this tab is open</span>
+  <!-- トロフィー -->
+  <div class="trophy-wrap">
+    <div class="trophy">🏆</div>
   </div>
 
-  <!-- Status bar -->
+  <!-- テキスト＋ボタン -->
+  <div class="hero-content">
+    <h1>Are you watching<br><em>World Cup?</em></h1>
+    <p class="hero-sub">Tap YES · your country counts while this tab is open</p>
+
+    <div class="live-count">
+      <div class="live-count-num" id="heroCount">—</div>
+      <div class="live-count-label">People watching right now</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+      <button id="yesBtn">YES</button>
+      <span class="btn-hint" id="btnHint">Your presence will be counted while this tab is open</span>
+    </div>
+  </div>
+</section>
+
+<!-- Stats -->
+<div class="stats-section">
   <div class="status-bar">
     <div class="status-dot" id="statusDot"></div>
-    <div>
-      <div class="status-label">WATCHING NOW</div>
-    </div>
+    <div class="status-label">WATCHING NOW</div>
     <div>
       <div class="total-count" id="totalCount">—</div>
       <div class="total-label">PEOPLE</div>
     </div>
   </div>
 
-  <!-- Ranking -->
   <div class="ranking-header">
-    <span class="ranking-title">COUNTRIES BY VIEWERS</span>
+    <span class="ranking-title">Countries by viewers</span>
     <span class="ranking-sub">REAL-TIME · UPDATES LIVE</span>
   </div>
   <div id="rankingList">
     <div class="empty-state">Waiting for viewers…</div>
   </div>
-
-</div><!-- /#app -->
+</div>
 
 <footer>Data stored in Firebase Realtime Database · Resets when tab closes</footer>
 
@@ -596,7 +478,6 @@ const firebaseConfig = {
 <script>
 /* ─── 国コード → 国名 & フラグ絵文字 ─── */
 function countryCodeToFlag(cc) {
-  // Regional Indicator Symbols (絵文字フラグ)
   if (!cc || cc.length !== 2) return '🌐';
   return cc.toUpperCase().split('').map(c =>
     String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65)
@@ -615,7 +496,24 @@ const COUNTRY_NAMES = {
   RU:'Russia', UA:'Ukraine', EG:'Egypt', ZA:'South Africa', KE:'Kenya',
   TN:'Tunisia', DZ:'Algeria', CM:'Cameroon', CN:'China', IN:'India',
   ID:'Indonesia', PH:'Philippines', TH:'Thailand', MY:'Malaysia', VN:'Vietnam',
-  NZ:'New Zealand', CL:'Chile', // duplicates OK
+  NZ:'New Zealand', SG:'Singapore', HK:'Hong Kong', TW:'Taiwan', PK:'Pakistan',
+  BD:'Bangladesh', LK:'Sri Lanka', NP:'Nepal', MM:'Myanmar', KH:'Cambodia',
+  LA:'Laos', BN:'Brunei', MN:'Mongolia', KZ:'Kazakhstan', UZ:'Uzbekistan',
+  AZ:'Azerbaijan', GE:'Georgia', AM:'Armenia', IL:'Israel', JO:'Jordan',
+  LB:'Lebanon', SY:'Syria', IQ:'Iraq', KW:'Kuwait', AE:'UAE', BH:'Bahrain',
+  OM:'Oman', YE:'Yemen', AF:'Afghanistan', UG:'Uganda', TZ:'Tanzania',
+  RW:'Rwanda', ET:'Ethiopia', SD:'Sudan', LY:'Libya', MZ:'Mozambique',
+  ZM:'Zambia', ZW:'Zimbabwe', BW:'Botswana', NA:'Namibia', GH:'Ghana',
+  CI:'Ivory Coast', ML:'Mali', BF:'Burkina Faso', NE:'Niger', TD:'Chad',
+  MR:'Mauritania', GM:'Gambia', GW:'Guinea-Bissau', GN:'Guinea', SL:'Sierra Leone',
+  LR:'Liberia', BO:'Bolivia', VE:'Venezuela', GY:'Guyana', SR:'Suriname',
+  CR:'Costa Rica', PA:'Panama', GT:'Guatemala', HN:'Honduras', SV:'El Salvador',
+  NI:'Nicaragua', CU:'Cuba', DO:'Dominican Republic', HT:'Haiti', JM:'Jamaica',
+  TT:'Trinidad and Tobago', BS:'Bahamas', BB:'Barbados', IS:'Iceland',
+  IE:'Ireland', LU:'Luxembourg', MT:'Malta', CY:'Cyprus', AL:'Albania',
+  MK:'North Macedonia', RS:'Serbia', BA:'Bosnia', ME:'Montenegro', XK:'Kosovo',
+  SI:'Slovenia', SK:'Slovakia', BY:'Belarus', MD:'Moldova', LT:'Lithuania',
+  LV:'Latvia', EE:'Estonia', FJ:'Fiji', PG:'Papua New Guinea', SB:'Solomon Islands',
 };
 
 function countryName(cc) {
@@ -676,15 +574,15 @@ function countryName(cc) {
   }
   console.log('Detected country:', myCountry);
 
-  /* 3. Firebase 接続状態を監視 */
-  const connRef     = db.ref('.info/connected');
-  const countryRef  = db.ref(`viewers/${myCountry}`);
-  const viewersRef  = db.ref('viewers');
+  /* 3. Firebase refs */
+  const connRef    = db.ref('.info/connected');
+  const countryRef = db.ref(`viewers/${myCountry}`);
+  const viewersRef = db.ref('viewers');
 
-  let isWatching  = false;
-  let myPresence  = null; // onDisconnect を持つ ref
+  let isWatching = false;
+  let myPresence = null;
 
-  /* ─── YES ボタン ─── */
+  /* YES ボタン */
   yesBtn.addEventListener('click', () => {
     if (isWatching) return;
     startWatching();
@@ -697,12 +595,10 @@ function countryName(cc) {
     yesBtn.disabled = true;
     btnHint.textContent = `Counting as ${countryCodeToFlag(myCountry)} ${countryName(myCountry)} — close tab to stop`;
 
-    // Firebase Presence パターン（接続済みかどうかに関わらず即時登録）
     myPresence = countryRef.push();
-    myPresence.onDisconnect().remove(); // タブ閉じたら自動削除
+    myPresence.onDisconnect().remove();
     myPresence.set(true);
 
-    // 再接続時にも再登録
     connRef.on('value', snap => {
       if (!snap.val() || !isWatching) return;
       if (myPresence) {
@@ -712,37 +608,23 @@ function countryName(cc) {
     });
   }
 
-  /* 4. Firebase 接続状態 → ドット表示 */
+  /* 接続ドット */
   connRef.on('value', snap => {
-    if (snap.val()) {
-      statusDot.classList.add('live');
-    } else {
-      statusDot.classList.remove('live');
-    }
+    statusDot.classList.toggle('live', !!snap.val());
   });
 
-  /* 5. リアルタイム集計 → ランキング描画 */
+  /* リアルタイム集計 */
   viewersRef.on('value', snap => {
-    console.log('DB snapshot:', JSON.stringify(snap.val()));
     const raw = snap.val() || {};
-
-    // 各国のカウントを集計
     const counts = {};
     let total = 0;
-
     for (const [cc, sessions] of Object.entries(raw)) {
-      // sessions は { pushId: true, ... } の形
-      const n = (sessions && typeof sessions === 'object')
-        ? Object.keys(sessions).length
-        : 0;
+      const n = (sessions && typeof sessions === 'object') ? Object.keys(sessions).length : 0;
       if (n > 0) { counts[cc] = n; total += n; }
     }
-
-    // 合計表示
     totalCount.textContent = total.toLocaleString();
     heroCount.textContent  = total.toLocaleString();
 
-    // ランキングHTML構築
     if (total === 0) {
       rankingList.innerHTML = '<div class="empty-state">Waiting for viewers…</div>';
       overlay.classList.add('hidden');
@@ -750,49 +632,36 @@ function countryName(cc) {
     }
 
     const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-    const topPct = sorted.length ? (sorted[0][1] / total * 100) : 100;
-
-    const html = sorted.map(([cc, cnt], i) => {
+    rankingList.innerHTML = sorted.map(([cc, cnt], i) => {
       const pct      = (cnt / total * 100).toFixed(1);
-      const barWidth = (cnt / sorted[0][1] * 100).toFixed(1); // 1位基準
+      const barWidth = (cnt / sorted[0][1] * 100).toFixed(1);
       const rankClass = i === 0 ? 'top1' : i === 1 ? 'top2' : i === 2 ? 'top3' : '';
       const isMine   = cc === myCountry;
-
       return `
         <div class="rank-row${isMine ? ' my-country' : ''}" id="row-${cc}">
           <div class="rank-num ${rankClass}">${i + 1}</div>
           <div class="rank-info">
             <div class="rank-name">
               <span class="rank-flag">${countryCodeToFlag(cc)}</span>
-              ${countryName(cc)}${isMine ? ' <span style="color:var(--green);font-size:10px">▶ YOU</span>' : ''}
+              ${countryName(cc)}${isMine ? ' <span style="color:var(--c3);font-size:10px">▶ YOU</span>' : ''}
             </div>
-            <div class="rank-bar-wrap">
-              <div class="rank-bar" style="width:${barWidth}%"></div>
-            </div>
+            <div class="rank-bar-wrap"><div class="rank-bar" style="width:${barWidth}%"></div></div>
           </div>
           <div class="rank-right">
             <span class="rank-pct">${pct}%</span>
             <span class="rank-cnt">${cnt} viewer${cnt !== 1 ? 's' : ''}</span>
           </div>
-        </div>
-      `;
+        </div>`;
     }).join('');
-
-    rankingList.innerHTML = html;
     overlay.classList.add('hidden');
   }, err => {
     console.error('DB read error:', err.code, err.message);
   });
 
-  /* 6. ローディング解除 */
   overlayMsg.textContent = 'LOADING...';
-  // Firebase接続確立時に即時解除
   connRef.once('value', () => overlay.classList.add('hidden'));
-  // フォールバック（接続に時間かかる場合）
   setTimeout(() => overlay.classList.add('hidden'), 4000);
-
 })();
 </script>
 </body>
-</html>
 </html>
