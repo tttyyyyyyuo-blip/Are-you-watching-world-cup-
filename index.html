@@ -485,35 +485,71 @@ function countryCodeToFlag(cc) {
 }
 
 const COUNTRY_NAMES = {
-  JP:'Japan', US:'United States', BR:'Brazil', FR:'France', DE:'Germany',
-  GB:'United Kingdom', AR:'Argentina', ES:'Spain', IT:'Italy', PT:'Portugal',
-  MX:'Mexico', KR:'South Korea', AU:'Australia', NL:'Netherlands', BE:'Belgium',
-  HR:'Croatia', MA:'Morocco', SN:'Senegal', NG:'Nigeria', GH:'Ghana',
-  SA:'Saudi Arabia', IR:'Iran', QA:'Qatar', CA:'Canada', CO:'Colombia',
-  CL:'Chile', PE:'Peru', EC:'Ecuador', UY:'Uruguay', PY:'Paraguay',
-  TR:'Turkey', PL:'Poland', CZ:'Czech Republic', RO:'Romania', SE:'Sweden',
-  NO:'Norway', DK:'Denmark', FI:'Finland', CH:'Switzerland', AT:'Austria',
-  RU:'Russia', UA:'Ukraine', EG:'Egypt', ZA:'South Africa', KE:'Kenya',
-  TN:'Tunisia', DZ:'Algeria', CM:'Cameroon', CN:'China', IN:'India',
-  ID:'Indonesia', PH:'Philippines', TH:'Thailand', MY:'Malaysia', VN:'Vietnam',
-  NZ:'New Zealand', SG:'Singapore', HK:'Hong Kong', TW:'Taiwan', PK:'Pakistan',
-  BD:'Bangladesh', LK:'Sri Lanka', NP:'Nepal', MM:'Myanmar', KH:'Cambodia',
-  LA:'Laos', BN:'Brunei', MN:'Mongolia', KZ:'Kazakhstan', UZ:'Uzbekistan',
-  AZ:'Azerbaijan', GE:'Georgia', AM:'Armenia', IL:'Israel', JO:'Jordan',
-  LB:'Lebanon', SY:'Syria', IQ:'Iraq', KW:'Kuwait', AE:'UAE', BH:'Bahrain',
-  OM:'Oman', YE:'Yemen', AF:'Afghanistan', UG:'Uganda', TZ:'Tanzania',
-  RW:'Rwanda', ET:'Ethiopia', SD:'Sudan', LY:'Libya', MZ:'Mozambique',
-  ZM:'Zambia', ZW:'Zimbabwe', BW:'Botswana', NA:'Namibia', GH:'Ghana',
-  CI:'Ivory Coast', ML:'Mali', BF:'Burkina Faso', NE:'Niger', TD:'Chad',
-  MR:'Mauritania', GM:'Gambia', GW:'Guinea-Bissau', GN:'Guinea', SL:'Sierra Leone',
-  LR:'Liberia', BO:'Bolivia', VE:'Venezuela', GY:'Guyana', SR:'Suriname',
-  CR:'Costa Rica', PA:'Panama', GT:'Guatemala', HN:'Honduras', SV:'El Salvador',
-  NI:'Nicaragua', CU:'Cuba', DO:'Dominican Republic', HT:'Haiti', JM:'Jamaica',
-  TT:'Trinidad and Tobago', BS:'Bahamas', BB:'Barbados', IS:'Iceland',
-  IE:'Ireland', LU:'Luxembourg', MT:'Malta', CY:'Cyprus', AL:'Albania',
-  MK:'North Macedonia', RS:'Serbia', BA:'Bosnia', ME:'Montenegro', XK:'Kosovo',
-  SI:'Slovenia', SK:'Slovakia', BY:'Belarus', MD:'Moldova', LT:'Lithuania',
-  LV:'Latvia', EE:'Estonia', FJ:'Fiji', PG:'Papua New Guinea', SB:'Solomon Islands',
+  // アジア東部
+  JP:'Japan', CN:'China', KR:'South Korea', TW:'Taiwan', HK:'Hong Kong', MO:'Macau', MN:'Mongolia',
+  // アジア南部
+  IN:'India', PK:'Pakistan', BD:'Bangladesh', LK:'Sri Lanka', NP:'Nepal', BT:'Bhutan', MV:'Maldives', AF:'Afghanistan',
+  // アジア東南部
+  ID:'Indonesia', PH:'Philippines', TH:'Thailand', VN:'Vietnam', MY:'Malaysia', SG:'Singapore',
+  MM:'Myanmar', KH:'Cambodia', LA:'Laos', BN:'Brunei', TL:'Timor-Leste',
+  // 中央アジア
+  KZ:'Kazakhstan', UZ:'Uzbekistan', TM:'Turkmenistan', KG:'Kyrgyzstan', TJ:'Tajikistan',
+  // 中東
+  SA:'Saudi Arabia', IR:'Iran', IQ:'Iraq', KW:'Kuwait', AE:'United Arab Emirates',
+  QA:'Qatar', BH:'Bahrain', OM:'Oman', YE:'Yemen', JO:'Jordan', LB:'Lebanon',
+  SY:'Syria', IL:'Israel', PS:'Palestine',
+  // 西ヨーロッパ
+  GB:'United Kingdom', FR:'France', DE:'Germany', IT:'Italy', ES:'Spain', PT:'Portugal',
+  NL:'Netherlands', BE:'Belgium', CH:'Switzerland', AT:'Austria', LU:'Luxembourg',
+  IE:'Ireland', IS:'Iceland', MC:'Monaco', AD:'Andorra', LI:'Liechtenstein', SM:'San Marino', VA:'Vatican',
+  // 北欧
+  SE:'Sweden', NO:'Norway', DK:'Denmark', FI:'Finland',
+  // 南欧
+  GR:'Greece', MT:'Malta', CY:'Cyprus',
+  // 東欧・バルカン
+  PL:'Poland', CZ:'Czech Republic', SK:'Slovakia', HU:'Hungary', RO:'Romania', BG:'Bulgaria',
+  HR:'Croatia', SI:'Slovenia', RS:'Serbia', BA:'Bosnia and Herzegovina',
+  ME:'Montenegro', MK:'North Macedonia', AL:'Albania', XK:'Kosovo',
+  TR:'Turkey', RU:'Russia', UA:'Ukraine', BY:'Belarus', MD:'Moldova',
+  LT:'Lithuania', LV:'Latvia', EE:'Estonia',
+  // コーカサス
+  AZ:'Azerbaijan', GE:'Georgia', AM:'Armenia',
+  // アフリカ北部
+  EG:'Egypt', MA:'Morocco', DZ:'Algeria', TN:'Tunisia', LY:'Libya', SD:'Sudan', SS:'South Sudan',
+  // アフリカ西部
+  NG:'Nigeria', GH:'Ghana', SN:'Senegal', CI:"Cote d'Ivoire", ML:'Mali', BF:'Burkina Faso',
+  NE:'Niger', TD:'Chad', MR:'Mauritania', GM:'Gambia', GW:'Guinea-Bissau', GN:'Guinea',
+  SL:'Sierra Leone', LR:'Liberia', TG:'Togo', BJ:'Benin', CV:'Cape Verde',
+  // アフリカ中部
+  CM:'Cameroon', CF:'Central African Republic', CG:'Republic of the Congo', CD:'DR Congo',
+  GA:'Gabon', GQ:'Equatorial Guinea', ST:'Sao Tome and Principe',
+  // アフリカ東部
+  ET:'Ethiopia', KE:'Kenya', TZ:'Tanzania', UG:'Uganda', RW:'Rwanda', BI:'Burundi',
+  SO:'Somalia', DJ:'Djibouti', ER:'Eritrea', MG:'Madagascar', MW:'Malawi', MZ:'Mozambique',
+  KM:'Comoros', SC:'Seychelles', MU:'Mauritius',
+  // アフリカ南部
+  ZA:'South Africa', ZM:'Zambia', ZW:'Zimbabwe', BW:'Botswana', NA:'Namibia',
+  LS:'Lesotho', SZ:'Eswatini', AO:'Angola',
+  // 北米
+  US:'United States', CA:'Canada', MX:'Mexico',
+  // 中米
+  GT:'Guatemala', BZ:'Belize', HN:'Honduras', SV:'El Salvador', NI:'Nicaragua',
+  CR:'Costa Rica', PA:'Panama',
+  // カリブ海
+  CU:'Cuba', JM:'Jamaica', HT:'Haiti', DO:'Dominican Republic',
+  TT:'Trinidad and Tobago', BB:'Barbados', BS:'Bahamas', LC:'Saint Lucia',
+  VC:'Saint Vincent and the Grenadines', GD:'Grenada', AG:'Antigua and Barbuda',
+  DM:'Dominica', KN:'Saint Kitts and Nevis',
+  // 南米
+  BR:'Brazil', AR:'Argentina', CO:'Colombia', CL:'Chile', PE:'Peru',
+  VE:'Venezuela', EC:'Ecuador', BO:'Bolivia', PY:'Paraguay', UY:'Uruguay',
+  GY:'Guyana', SR:'Suriname',
+  // オセアニア
+  AU:'Australia', NZ:'New Zealand', FJ:'Fiji', PG:'Papua New Guinea',
+  SB:'Solomon Islands', VU:'Vanuatu', WS:'Samoa', TO:'Tonga', KI:'Kiribati',
+  FM:'Micronesia', MH:'Marshall Islands', PW:'Palau', NR:'Nauru', TV:'Tuvalu',
+  // その他
+  XX:'Unknown',
 };
 
 function countryName(cc) {
