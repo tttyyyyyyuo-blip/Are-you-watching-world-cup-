@@ -140,6 +140,46 @@ body::after {
   margin-top: 12px;
 }
 
+.hero-count {
+  margin-top: 32px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px 48px;
+  position: relative;
+}
+
+.hero-count::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--green-dim), transparent);
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.hero-count-num {
+  font-family: var(--score-font);
+  font-size: clamp(48px, 10vw, 96px);
+  font-weight: 900;
+  color: var(--green);
+  line-height: 1;
+  text-shadow: 0 0 40px var(--green-glow), 0 0 80px rgba(74,222,128,0.15);
+  transition: all 0.4s ease;
+}
+
+.hero-count-label {
+  font-family: var(--score-font);
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--muted);
+}
+
 /* ─── YES Button ─── */
 .cta-wrap {
   margin: 8px 0 52px;
@@ -495,6 +535,10 @@ footer {
     <p class="eyebrow">⚽ FIFA WORLD CUP — LIVE TRACKER</p>
     <h1>Are you watching<br><span>World Cup?</span></h1>
     <p class="subtitle">Tap YES to join the global count — tracked live by country</p>
+    <div class="hero-count">
+      <div class="hero-count-num" id="heroCount">—</div>
+      <div class="hero-count-label">PEOPLE WATCHING RIGHT NOW</div>
+    </div>
   </section>
 
   <!-- CTA -->
@@ -586,6 +630,7 @@ function countryName(cc) {
   const btnHint    = document.getElementById('btnHint');
   const statusDot  = document.getElementById('statusDot');
   const totalCount = document.getElementById('totalCount');
+  const heroCount  = document.getElementById('heroCount');
   const rankingList = document.getElementById('rankingList');
 
   function showError(msg) {
@@ -690,6 +735,7 @@ function countryName(cc) {
 
     // 合計表示
     totalCount.textContent = total.toLocaleString();
+    heroCount.textContent  = total.toLocaleString();
 
     // ランキングHTML構築
     if (total === 0) {
@@ -741,4 +787,5 @@ function countryName(cc) {
 })();
 </script>
 </body>
+</html>
 </html>
