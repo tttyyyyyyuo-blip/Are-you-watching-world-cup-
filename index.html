@@ -570,7 +570,7 @@ footer {
 
 </div><!-- /#app -->
 
-<footer>Data stored in Firebase Realtime  · Resets when tab closes</footer>
+<footer>Data stored in Firebase Realtime Database · Resets when tab closes</footer>
 
 <!-- ===============================================================
      ★ FIREBASE 設定 — ここを書き換えてください ★
@@ -697,14 +697,18 @@ function countryName(cc) {
     yesBtn.disabled = true;
     btnHint.textContent = `Counting as ${countryCodeToFlag(myCountry)} ${countryName(myCountry)} — close tab to stop`;
 
-    // Firebase Presence パターン
-    connRef.on('value', snap => {
-      if (!snap.val()) return; // オフライン時は何もしない
+    // Firebase Presence パターン（接続済みかどうかに関わらず即時登録）
+    myPresence = countryRef.push();
+    myPresence.onDisconnect().remove(); // タブ閉じたら自動削除
+    myPresence.set(true);
 
-      // セッションごとの一時キー
-      myPresence = countryRef.push();
-      myPresence.onDisconnect().remove(); // タブ閉じたら自動削除
-      myPresence.set(true);
+    // 再接続時にも再登録
+    connRef.on('value', snap => {
+      if (!snap.val() || !isWatching) return;
+      if (myPresence) {
+        myPresence.onDisconnect().remove();
+        myPresence.set(true);
+      }
     });
   }
 
@@ -787,5 +791,4 @@ function countryName(cc) {
 })();
 </script>
 </body>
-</html>
 </html>
